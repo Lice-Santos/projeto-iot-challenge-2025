@@ -68,8 +68,10 @@ Até o momento, o projeto já permite:
 ## 📌 AUTORES
 Projeto desenvolvido por 
 
-Alice Nunes - RM 559052
-Guilherme Akira - RM 556128
-Anne Rezendes - RM 556779
+-Alice Nunes - RM 559052
+
+-Guilherme Akira - RM 556128
+
+-Anne Rezendes - RM 556779
 
 ---
