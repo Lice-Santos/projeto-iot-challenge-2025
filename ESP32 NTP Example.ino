@@ -30,13 +30,13 @@ void salvarPlaca(String placa) {
   for (int i = 0; i < placa.length(); i++) {
     EEPROM.write(i, placa[i]);  
   }
-  EEPROM.write(placa.length(), '\0'); // Marca final da string
-  EEPROM.commit(); // Salva permanentemente
+  EEPROM.write(placa.length(), '\0'); 
+  EEPROM.commit(); 
 }
 
 // Função para recuperar a placa da EEPROM
 String lerPlaca() {
-  char placaLida[20]; // buffer
+  char placaLida[20]; 
   int i = 0;
   byte b = EEPROM.read(i);
   while (b != '\0' && i < sizeof(placaLida) - 1) {
@@ -44,14 +44,14 @@ String lerPlaca() {
     i++;
     b = EEPROM.read(i);
   }
-  placaLida[i] = '\0'; // Finaliza string
+  placaLida[i] = '\0'; 
   return String(placaLida);
 }
 
 void setup() {
   Serial.begin(115200);
 
-  EEPROM.begin(EEPROM_SIZE);  // Inicializa EEPROM
+  EEPROM.begin(EEPROM_SIZE); 
 
   pinMode(botaoEeprom, INPUT_PULLUP);  
   pinMode(buzzerPin , OUTPUT); 
@@ -69,7 +69,7 @@ void setup() {
 
   delay(2000);
 
-  // Salvar a placa na EEPROM (só precisa rodar 1 vez, pode comentar depois)
+  // Salvar a placa na EEPROM 
   salvarPlaca(placaDaMoto);
 
   // Ler a placa da EEPROM
@@ -122,7 +122,7 @@ void loop() {
   static bool lastButtonState = HIGH;  
   bool buttonState = digitalRead(botao);  
 
-static int ultimoEstadoEeprom = HIGH;  // começa solto (INPUT_PULLUP = HIGH)
+static int ultimoEstadoEeprom = HIGH; 
 int estadoBotaoEeprom = digitalRead(botaoEeprom);
 
 if (ultimoEstadoEeprom == HIGH && estadoBotaoEeprom == LOW) {
@@ -165,7 +165,7 @@ ultimoEstadoEeprom = estadoBotaoEeprom;
   int chaveAtual = digitalRead(chavePin);
 
   if (lastChaveState == LOW && chaveAtual == HIGH) {
-    // Alterna o estado da buzina só quando detecta borda de subida
+   
     buzinaState = !buzinaState;
 
     if (buzinaState) {
@@ -173,7 +173,7 @@ ultimoEstadoEeprom = estadoBotaoEeprom;
         LCD.clear();
       Serial.println("Buzina ativada");
       LCD.setCursor(0, 1);
-      LCD.print("Buzina ativada   "); // espaços pra apagar lixo antigo
+      LCD.print("Buzina ativada "); 
     } else {
       digitalWrite(buzzerPin, LOW);
         LCD.clear();
