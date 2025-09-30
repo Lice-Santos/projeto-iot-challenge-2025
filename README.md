@@ -61,7 +61,7 @@ Até o momento, o projeto já permite:
 ---
 
 ## 🎥 Link do Vídeo
-[Vídeo](https://www.youtube.com/watch?v=V6_2mS8jhyY)
+[Vídeo apresentação da ideia central do projeto e demonstração funcional](https://www.youtube.com/watch?v=V6_2mS8jhyY)
 
 ---
 
