@@ -1,77 +1,113 @@
-# 📟 Simulação TRIA TAG – Controle de LED, Buzina, LCD e EEPROM
+# 🚀 **Projeto TRIA TAG – Monitoramento Inteligente de Motocicletas (ESP32 + IoT)**
 
-Este projeto é uma simulação no **Wokwi** utilizando o microcontrolador **ESP32**, com o objetivo de integrar múltiplos periféricos (LED, buzina, botões, LCD) e armazenar informações de forma persistente na **EEPROM**.
-
----
-
-## 🚀 Tecnologias Utilizadas
-- **ESP32** – Microcontrolador principal.
-- **Wokwi** – Simulador online para prototipagem rápida de sistemas embarcados.
-- **C++ (Arduino)** – Linguagem utilizada no desenvolvimento.
-- **Bibliotecas:**
-  - [`WiFi.h`](https://www.arduino.cc/en/Reference/WiFi) – Para simulação de conexão Wi-Fi.
-  - [`Wire.h`](https://www.arduino.cc/en/reference/wire) – Comunicação I2C.
-  - [`LiquidCrystal_I2C.h`](https://github.com/johnrickman/LiquidCrystal_I2C) – Controle simplificado do display LCD via interface I2C.
-  - [`EEPROM.h`](https://www.arduino.cc/en/Reference/EEPROM) – Gravação e leitura de dados persistentes na memória.
+Este projeto simula um **sistema IoT de monitoramento veicular** desenvolvido com o **ESP32**, integrando **Thinger.io**, **EEPROM**, **controle de LED e buzina**, e **coleta de métricas de uso**.  
+A proposta visa **monitorar motos dentro de um pátio**, **acompanhar seu funcionamento**, e **enviar dados em tempo real** para a nuvem — apoiando o desafio proposto pela **Mottu** e **FIAP**.
 
 ---
 
-## ❓ Por que usar a biblioteca **LiquidCrystal I2C**
-O display LCD 16x2 pode ser controlado diretamente por vários pinos digitais, mas isso consome muitos recursos do microcontrolador.  
-A escolha da biblioteca **LiquidCrystal I2C** foi feita porque:
-- Utiliza apenas **2 pinos** (SDA e SCL) em vez de 6+ conexões.
-- Simplifica o código com comandos diretos (`LCD.init()`, `LCD.print()` etc).
-- Permite fácil expansão de periféricos no ESP32 sem ocupar pinos desnecessários.
+## ⚙️ **Principais Funcionalidades**
+- 🟢 **Controle remoto de LED e buzina** via **Thinger.io** ou por botões físicos.  
+- 💾 **Armazenamento persistente (EEPROM)** de:
+  - Placa da moto.
+  - Latitude e longitude do local.  
+- 🌐 **Conexão Wi-Fi** e integração direta com o **Thinger.io**.  
+- 📈 **Métricas automáticas**:
+  - Tempo total de LED ligado.
+  - Tempo total de buzina acionada.
+  - Número de ativações de cada componente.
+- 🛰️ **Simulação de GPS dinâmico** — altera a localização se o veículo estiver “em deslocamento”.  
+- 🔔 **Transmissão em tempo real** de informações para o painel IoT.
 
 ---
 
-## ⚙️ Funcionalidades
-- **LED controlado por botão** (liga/desliga), simulando como será no aplicativo.
-- **Buzina ativada por chave/botão**, simulando como será no aplicativo.
-- **Armazenamento de dados na EEPROM**:
-  - Placa do veículo.
-  - Setor correspondente.
-- **Exibição no LCD**:
-  - Linha 1 → Placa.
-  - Linha 2 → Setor.
-- **Botão de recuperação** dos dados salvos na EEPROM.
-- **Simulação de Wi-Fi** .
+## 🧩 **Tecnologias e Bibliotecas Utilizadas**
+| Biblioteca | Função |
+|-------------|--------|
+| **WiFi.h** | Conexão do ESP32 à rede Wi-Fi |
+| **Wire.h** | Comunicação I²C |
+| **LiquidCrystal_I2C.h** | Controle de display LCD via interface I²C |
+| **EEPROM.h** | Armazenamento persistente de dados (placa e coordenadas) |
+| **ThingerESP32.h** | Integração com a plataforma IoT Thinger.io |
 
 ---
 
-## 🖥️ Instruções de Uso
-1. Abra o projeto no **[Wokwi](https://wokwi.com/)**.  
-2. Carregue o código do ESP32 (`.ino` ou `.cpp`) e o arquivo `diagram.json`.  
-3. Clique em **Play** ▶ para iniciar a simulação.  
-4. Interaja com os botões:
-   - **Botão LED** → alterna o estado do LED.  
-   - **Botão EEPROM** → lê a placa + setor salvos e exibe no LCD.  
-   - **Chave buzina** → alterna buzina ligada/desligada.  
-5. Acompanhe as mensagens também pelo **Serial Monitor**.
+## 🌍 **Integração com Thinger.io**
+
+A integração com o **[Thinger.io](https://thinger.io)** permite **monitorar, controlar e coletar dados** do sistema em tempo real.  
+Os recursos criados no código correspondem aos seguintes controles e sensores:
+
+| Recurso | Tipo | Descrição |
+|----------|------|-----------|
+| `placa` | Leitura | Retorna a placa salva na EEPROM |
+| `led` | Entrada/Saída | Liga/desliga o LED e transmite seu estado |
+| `buzina` | Entrada/Saída | Liga/desliga a buzina e transmite seu estado |
+| `metricas` | Leitura | Retorna contadores e tempos de uso de LED e buzina |
+| `gps` | Leitura | Retorna latitude, longitude e status (“Em deslocamento” ou “Parado na oficina”) |
 
 ---
 
-## 📊 Resultados Parciais
-Até o momento, o projeto já permite:
-- Gravar e recuperar **placa + setor** da EEPROM.
-- Mostrar os dados no **LCD** com layout organizado.
-- Alternar LED e buzina por botões dedicados.
-- Conectar ao Wi-Fi simulado e exibir status no display.
+## 🔌 **Estrutura de Hardware (Simulação Wokwi)**
+| Componente | Pino ESP32 | Descrição |
+|-------------|-------------|-----------|
+| LED | 19 | Indica estado ativo/inativo |
+| Botão LED | 18 | Alterna manualmente o LED |
+| Botão EEPROM | 17 | Aciona leitura/gravação de dados |
+| Chave buzina | 4 | Alterna buzina ligada/desligada |
+| Buzzer | 16 | Sinal sonoro da moto |
+| Display LCD (I2C) | SDA/SCL | Exibe status e dados da moto |
 
 ---
 
-## 🎥 Link do Vídeo
-[Vídeo apresentação da ideia central do projeto e demonstração funcional](https://www.youtube.com/watch?v=V6_2mS8jhyY)
+## 🧠 **Lógica de Funcionamento**
+1. **Inicialização:**  
+   - O ESP32 conecta-se ao Wi-Fi e ao Thinger.io.  
+   - A placa, latitude e longitude são gravadas na EEPROM.  
+2. **Controle Local e Remoto:**  
+   - Botões físicos e interface Thinger.io controlam o LED e a buzina.  
+3. **Métricas Inteligentes:**  
+   - Cada acionamento é contabilizado, e o tempo de uso total é calculado automaticamente.  
+4. **Simulação GPS:**  
+   - Quando LED ou buzina estão ligados, a posição varia levemente para simular movimento.  
+5. **Monitoramento IoT:**  
+   - Todos os dados são enviados ao Thinger.io em tempo real.
 
 ---
 
-## 📌 AUTORES
-Projeto desenvolvido por 
-
--Alice Nunes - RM 559052
-
--Guilherme Akira - RM 556128
-
--Anne Rezendes - RM 556779
+## 🖥️ **Como Executar no Wokwi**
+1. Acesse o [Wokwi ESP32 Simulator](https://wokwi.com).  
+2. Crie um novo projeto com o **ESP32 Dev Module**.  
+3. Adicione o código principal e o `diagram.json`.  
+4. Monte os componentes conforme a tabela de hardware.  
+5. Clique em ▶ **Play** para iniciar a simulação.  
+6. Veja as mensagens no **Serial Monitor** e monitore o dispositivo via **Thinger.io Dashboard**.
 
 ---
+
+## 📊 **Resultados Obtidos**
+✅ Sistema IoT funcional e responsivo.  
+✅ Dados persistentes mesmo após reinicialização.  
+✅ Comunicação estável e confiável com Thinger.io.  
+✅ Métricas automáticas de uso de LED e buzina.  
+✅ Simulação GPS com comportamento dinâmico e realista.
+
+---
+
+## 👨‍💻 **Equipe do Projeto**
+| Nome | RM | Função |
+|------|----|--------|
+| **Alice Nunes** | 559052 | Desenvolvimento ESP32 / Integração IoT |
+| **Guilherme Akira** | 556128 | Lógica de Negócio e Integração com Thinger.io |
+| **Anne Rezendes** | 556779 | Documentação e Interface IoT |
+
+---
+
+## 🎥 **Demonstração em Vídeo**
+[Assista à apresentação e funcionamento do projeto no YouTube](https://www.youtube.com/watch?v=V6_2mS8jhyY)
+
+---
+
+## 🧭 **Próximos Passos**
+- Implementar **alertas automáticos de status** no painel IoT.  
+- Integrar com o **banco de dados do sistema web**.  
+- Adicionar **geofencing** e alertas MQTT em tempo real.  
+- Criar **dashboard avançado** com gráficos e histórico de métricas.
