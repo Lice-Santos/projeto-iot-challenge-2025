@@ -3,7 +3,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
 #include <ThingerESP32.h>
-#include <WebServer.h>
 
 // =====================
 // CONFIGURAÇÕES
@@ -17,7 +16,6 @@
 #define SSID_PASSWORD ""
 
 ThingerESP32 thing(USERNAME, DEVICE_ID, DEVICE_CREDENTIAL);
-WebServer server(80);
 
 String placaDaMoto = "FIA2025";
 String latitude = "-23.5226110933519";   
@@ -71,6 +69,7 @@ String lerLatitude(){
   char lat[20];
   int i = 0;
   byte b = EEPROM.read(base);
+
   while(b != '\0' && i < sizeof(lat)-1){
     lat[i++] = b;
     b = EEPROM.read(base+i);
@@ -84,6 +83,7 @@ String lerLongitude(){
   char lon[20];
   int i = 0;
   byte b = EEPROM.read(base);
+
   while(b != '\0' && i < sizeof(lon)-1){
     lon[i++] = b;
     b = EEPROM.read(base+i);
@@ -96,30 +96,13 @@ String lerPlaca() {
   char buf[20];
   int i = 0;
   byte b = EEPROM.read(0);
+
   while (b != '\0' && i < sizeof(buf)-1) {
     buf[i++] = b;
     b = EEPROM.read(i);
   }
   buf[i] = '\0';
   return String(buf);
-}
-
-// =====================
-// HANDLER API
-// =====================
-void handleAPI() {
-  String json = "{";
-  json += "\"placa\":\"" + lerPlaca() + "\",";
-  json += "\"ledState\":" + String(ledState ? "true" : "false") + ",";
-  json += "\"vezesLedLigou\":" + String(vezesLedLigou) + ",";
-  json += "\"tempoLedLigadoTotal\":" + String(tempoLedLigadoTotal) + ",";
-  json += "\"buzinaState\":" + String(buzinaState ? "true" : "false") + ",";
-  json += "\"vezesBuzinaLigou\":" + String(vezesBuzinaLigou) + ",";
-  json += "\"tempoBuzinaTotal\":" + String(tempoBuzinaTotal) + ",";
-  json += "\"latitude\":\"" + latitude + "\",";
-  json += "\"longitude\":\"" + longitude + "\"";
-  json += "}";
-  server.send(200, "application/json", json);
 }
 
 // =====================
@@ -146,49 +129,63 @@ void setup() {
   latitude = lerLatitude();
   longitude = lerLongitude();
 
-  Serial.println("Placa salva: " + lerPlaca());
+  String placaRecuperada = lerPlaca();
+  Serial.println("Placa salva: " + placaRecuperada);
+
+  thing.add_wifi(SSID, SSID_PASSWORD);
 
   // =====================
   // THINGER.IO RESOURCES
   // =====================
-  thing.add_wifi(SSID, SSID_PASSWORD);
 
-  thing["placa"] >> [](pson &out){ out = lerPlaca(); };
+  // ✅ Placa
+  thing["placa"] >> [](pson &out){
+    out = lerPlaca();
+  };
 
+  // ✅ LED
   thing["led"] << [](pson &in){
     if(in.is_empty()){
       in = ledState;
     } else {
       bool novoEstado = in;
+
       if (!ledState && novoEstado){
         vezesLedLigou++;
         ledLigadoDesde = millis();
       }
+
       if (ledState && !novoEstado){
-        tempoLedLigadoTotal += (millis() - ledLigadoDesde)/1000;
+        tempoLedLigadoTotal += (millis() - ledLigadoDesde) / 1000;
       }
+
       ledState = novoEstado;
       digitalWrite(led, ledState ? HIGH : LOW);
     }
   };
 
+  // ✅ Buzina
   thing["buzina"] << [](pson &in){
     if(in.is_empty()){
       in = buzinaState;
     } else {
       bool novoEstado = in;
+
       if (!buzinaState && novoEstado){
         vezesBuzinaLigou++;
         buzinaLigadaDesde = millis();
       }
+
       if (buzinaState && !novoEstado){
-        tempoBuzinaTotal += (millis() - buzinaLigadaDesde)/1000;
+        tempoBuzinaTotal += (millis() - buzinaLigadaDesde) / 1000;
       }
+
       buzinaState = novoEstado;
       digitalWrite(buzzerPin, buzinaState ? HIGH : LOW);
     }
   };
 
+  // ✅ MÉTRICAS
   thing["metricas"] >> [](pson &out){
     out["led_tempo_total"] = tempoLedLigadoTotal;
     out["led_vezes"] = vezesLedLigou;
@@ -196,46 +193,51 @@ void setup() {
     out["buzina_vezes"] = vezesBuzinaLigou;
   };
 
+  // ✅ GPS (PARA MAPA DO THINGER)
   thing["gps"] >> [](pson &out){
+
+    // Moto em movimento
     if (ledState || buzinaState){
       out["status"] = "Em deslocamento";
       out["latitude"] = latitude.toFloat() + 0.0001;
       out["longitude"] = longitude.toFloat() + 0.0001;
-    } else {
+    }
+
+    // Moto parada na oficina
+    else {
       out["status"] = "Parado na oficina";
       out["latitude"] = latitude;
       out["longitude"] = longitude;
     }
   };
-
-  // =====================
-  // INICIAR WEB SERVER
-  // =====================
-  server.on("/api", handleAPI);
-  server.begin();
 }
 
 // =====================
 // LOOP
 // =====================
 void loop() {
-  thing.handle();        // mantém Thinger funcionando
-  server.handleClient(); // atende requisições API
+
+  thing.handle();
 
   // Botão do LED
   static bool lastButtonState = HIGH;
   bool buttonState = digitalRead(botao);
+
   if (lastButtonState == HIGH && buttonState == LOW){
     bool novoEstado = !ledState;
+
     if (!ledState && novoEstado){
       vezesLedLigou++;
       ledLigadoDesde = millis();
     }
+
     if (ledState && !novoEstado){
-      tempoLedLigadoTotal += (millis() - ledLigadoDesde)/1000;
+      tempoLedLigadoTotal += (millis() - ledLigadoDesde) / 1000;
     }
+
     ledState = novoEstado;
     digitalWrite(led, ledState);
+
     thing.stream("led");
     thing.stream("gps");
   }
@@ -244,17 +246,22 @@ void loop() {
   // Chave da Buzina
   static int lastChaveState = LOW;
   int chaveAtual = digitalRead(chavePin);
+
   if (lastChaveState == LOW && chaveAtual == HIGH){
     bool novoEstado = !buzinaState;
+
     if (!buzinaState && novoEstado){
       vezesBuzinaLigou++;
       buzinaLigadaDesde = millis();
     }
+
     if (buzinaState && !novoEstado){
-      tempoBuzinaTotal += (millis() - buzinaLigadaDesde)/1000;
+      tempoBuzinaTotal += (millis() - buzinaLigadaDesde) / 1000;
     }
+
     buzinaState = novoEstado;
     digitalWrite(buzzerPin, buzinaState);
+
     thing.stream("buzina");
     thing.stream("gps");
   }
