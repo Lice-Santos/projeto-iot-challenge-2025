@@ -102,7 +102,7 @@ Os recursos criados no código correspondem aos seguintes controles e sensores:
 ---
 
 ## 🎥 **Demonstração em Vídeo**
-[Assista à apresentação e funcionamento do projeto no YouTube](https://www.youtube.com/watch?v=V6_2mS8jhyY)
+[Assista à apresentação e funcionamento do projeto no YouTube](https://youtu.be/CAi1adRnFVw?si=WrVLh8_G_igOH7gv)
 
 ---
 
